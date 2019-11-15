@@ -1,98 +1,157 @@
 import random
 
 def create_network(file_name):
-    '''(str)->list of tuples where each tuple has 2 elements the first is int and the second is list of int
+     friends = open(file_name).read().splitlines()
+     network = []
+     clone = []
 
-    Precondition: file_name has data on social netowrk. In particular:
-    The first line in the file contains the number of users in the social network
-    Each line that follows has two numbers. The first is a user ID (int) in the social network,
-    the second is the ID of his/her friend.
-    The friendship is only listed once with the user ID always being smaller than friend ID.
-    For example, if 7 and 50 are friends there is a line in the file with 7 50 entry, but there is line 50 7.
-    There is no user without a friend
-    Users sorted by ID, friends of each user are sorted by ID
-    Returns the 2D list representing the frendship nework as described above
-    where the network is sorted by the ID and each list of int (in a tuple) is sorted (i.e. each list of friens is sorted).
-    '''
-    friends = open(file_name).read().splitlines()
-    network=[]
+     num = int(friends.pop(0))
 
-    # YOUR CODE GOES HERE
-    
-    return network
+     for i in range(len(friends)):
+          x = friends[i].split(' ')
+          clone.append(x[1] + ' ' + x[0])
+
+     friends = friends + clone
+     friends.sort()
+
+     temp = friends.pop(0).split(' ')
+     entry = (temp[0], [temp[1]])
+
+     network.append(entry)
+
+     i = 1
+
+     try:
+         while i <= num+1:
+             temp = friends.pop(0).split(' ')
+             if(temp[0] == network[i-1][0]):
+                 network[i-1][1].append(temp[1])
+             else:
+                  entry = (temp[0], [temp[1]])
+                  network.append(entry)
+                  i += 1
+
+     except:
+          pass
+
+     return network
 
 def getCommonFriends(user1, user2, network):
-    '''(int, int, 2D list) ->list
-    Precondition: user1 and user2 IDs in the network. 2D list sorted by the IDs, 
-    and friends of user 1 and user 2 sorted 
-    Given a 2D-list for friendship network, returns the sorted list of common friends of user1 and user2
-    '''
-    common=[]
-    
-    # YOUR CODE GOES HERE
+     common=[]
+     index1 = 0
+     index2 = 0
 
-    return common
+     for i in range(len(network)):
+          if(int(network[i][0]) == user1):
+               index1 = i
+          if(int(network[i][0]) == user2):
+               index2 = i
 
-    
+     for i in range(len(network[index1][1])):
+          if(network[index1][1][i] in network[index2][1]):
+               common.append(network[index1][1][i])
+
+     common.sort()
+
+     return common
+
 def recommend(user, network):
-    '''(int, 2Dlist)->int or None
-    Given a 2D-list for friendship network, returns None if there is no other person
-    who has at least one neighbour in common with the given user and who the user does
-    not know already.
-    
-    Otherwise it returns the ID of the recommended friend. A recommended friend is a person
-    you are not already friends with and with whom you have the most friends in common in the whole network.
-    If there is more than one person with whom you have the maximum number of friends in common
-    return the one with the smallest ID. '''
 
-    # YOUR CODE GOES HERE
-    pass
+     possible = []
 
-    
+     index1 = 0
 
+     for i in range(len(network)):
+          if(int(network[i][0]) == user):
+               index1 = i
+
+     for i in range(len(network)):
+          if(i == index1 or network[i][0] in network[index1][1]):
+               pass
+          else:
+               entry = (network[i][0],len(getCommonFriends(user,int(network[i][0]),network)))
+               possible.append(entry)
+
+     if(len(possible) == 0):
+          return None
+
+     high = 0
+
+     for i in range(len(possible)):
+          if(possible[i][1] > high):
+               high = possible[i][1]
+
+     final = []
+
+     for i in range(len(possible)):
+          if(possible[i][1] == high):
+               final.append(possible[i][0])
+
+     return int(min(final))
 
 def k_or_more_friends(network, k):
     '''(2Dlist,int)->int
     Given a 2D-list for friendship network and non-negative integer k,
     returns the number of users who have at least k friends in the network
     Precondition: k is non-negative'''
-    # YOUR CODE GOES HERE
-    pass
- 
+
+    num = 0
+
+    for i in range(len(network)):
+        if(len(network[i][1]) >= k):
+            num += 1
+
+    return num
 
 def maximum_num_friends(network):
     '''(2Dlist)->int
     Given a 2D-list for friendship network,
     returns the maximum number of friends any user in the network has.
     '''
-    # YOUR CODE GOES HERE
-    pass
-    
+
+    high = 0
+
+    for i in range(len(network)):
+        if(len(network[i][1]) > high):
+            high = len(network[i][1])
+
+    return high
 
 def people_with_most_friends(network):
     '''(2Dlist)->1D list
     Given a 2D-list for friendship network, returns a list of people (IDs) who have the most friends in network.'''
     max_friends=[]
-    # YOUR CODE GOES HERE
-    return    max_friends
+
+    for i in network:
+        if(len(i[1]) == maximum_num_friends(network)):
+            max_friends.append(i[0])
+
+    return max_friends
 
 
 def average_num_friends(network):
     '''(2Dlist)->number
     Returns an average number of friends overs all users in the network'''
 
-    # YOUR CODE GOES HERE
-    pass
-    
+    avg = 0
+
+    for i in network:
+        avg += len(i[1])
+
+    return avg//len(network)
+
 
 def knows_everyone(network):
     '''(2Dlist)->bool
     Given a 2D-list for friendship network,
     returns True if there is a user in the network who knows everyone
     and False otherwise'''
-    
-    # YOUR CODE GOES HERE
-    pass
+
+    for i in network:
+        if (len(i[1]) == len(network)-1):
+            return True
+        else:
+            return False
 
 
 ####### CHATTING WITH USER CODE:
@@ -107,7 +166,7 @@ def is_valid_file_name():
     except FileNotFoundError:
         print("There is no file with that name. Try again.")
         file_name=None
-    return file_name 
+    return file_name
 
 def get_file_name():
     '''()->str
@@ -124,10 +183,16 @@ def get_uid(network):
     '''(2Dlist)->int
     Keeps on asking for a user ID that exists in the network
     until it succeeds. Then it returns it'''
-    
-    # YOUR CODE GOES HERE
-    pass
-    
+
+    try:
+        uid = int(input("Enter a user ID that exists in the network"))
+        for i in range(len(network)):
+            if(uid == int(network[i][0])):
+                return int(uid)
+        print("That user does not exist in the network. Please try again")
+        get_uid(network)
+    except:
+        get_uid(network)
 
 ##############################
 # main
@@ -136,7 +201,7 @@ def get_uid(network):
 # NOTHING FOLLOWING THIS LINE CAN BE REMOVED or MODIFIED
 
 file_name=get_file_name()
-    
+
 net=create_network(file_name)
 
 print("\nFirst general statistics about the social network:\n")
@@ -168,7 +233,7 @@ else:
     print("For user with ID", uid,"we recommend the user with ID",rec)
     print("That is because users", uid, "and",rec, "have", len(getCommonFriends(uid,rec,net)), "common friends and")
     print("user", uid, "does not have more common friends with anyone else.")
-        
+
 
 print("\nFinally, you showed interest in knowing common friends of some pairs of users.")
 print("About 1st user ...")
@@ -179,5 +244,3 @@ print("Here is the list of common friends of", uid1, "and", uid2)
 common=getCommonFriends(uid1,uid2,net)
 for item in common:
     print(item, end=" ")
-
-    
